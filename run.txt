@@ -3,7 +3,7 @@
 
 !python setup.py develop --no_cuda_ext
 
-#check train.py - sorted
+#check train.py - in file
 #check configs
 
 !bash ./train.sh Deraining/Options/Deraining_Restormer.yml
