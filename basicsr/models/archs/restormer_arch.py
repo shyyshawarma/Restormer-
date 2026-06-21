@@ -72,7 +72,7 @@ class LayerNorm(nn.Module):
 
 
 ##########################################################################
-## Gated-Dconv Feed-Forward Network (GDFN) -> Purely Same
+## Gated-Dconv Feed-Forward Network (GDFN) -> Purely Phaseformer
 class FeedForward(nn.Module):
     def __init__(self, dim, ffn_expansion_factor, bias):
 
@@ -97,11 +97,52 @@ class FeedForward(nn.Module):
 
 ##########################################################################
 ## Multi-DConv Head Transposed Self-Attention (MDTA)
+# class Attention(nn.Module):
+#     def __init__(self, dim, num_heads, bias):
+#         super(Attention, self).__init__()
+#         self.num_heads = num_heads
+#         self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
+
+#         self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
+#         self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
+#         self.project_out = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
+        
+
+
+#     def forward(self, x):
+#         b,c,h,w = x.shape
+
+#         qkv = self.qkv_dwconv(self.qkv(x))
+#         q,k,v = qkv.chunk(3, dim=1)   
+        
+#         q = rearrange(q, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+#         k = rearrange(k, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+#         v = rearrange(v, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+
+#         q = torch.nn.functional.normalize(q, dim=-1)
+#         k = torch.nn.functional.normalize(k, dim=-1)
+
+#         attn = (q @ k.transpose(-2, -1)) * self.temperature
+#         attn = attn.softmax(dim=-1)
+
+#         out = (attn @ v)
+        
+#         out = rearrange(out, 'b head c (h w) -> b (head c) h w', head=self.num_heads, h=h, w=w)
+
+#         out = self.project_out(out)
+#         return out
+
+
+def inv_mag(x):
+  fft_ = torch.fft.fft2(x)
+  fft_ = torch.fft.ifft2(1*torch.exp(1j*(fft_.angle())))
+  return fft_.real
+
 class Attention(nn.Module):
     def __init__(self, dim, num_heads, bias):
         super(Attention, self).__init__()
         self.num_heads = num_heads
-        self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
+        self.temperature = nn.Parameter(torch.ones(1,num_heads, 1, 1))
 
         self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
         self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
@@ -115,23 +156,19 @@ class Attention(nn.Module):
         qkv = self.qkv_dwconv(self.qkv(x))
         q,k,v = qkv.chunk(3, dim=1)   
         
-        q = rearrange(q, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-        k = rearrange(k, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-        v = rearrange(v, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+        q = inv_mag(q)
+        k = inv_mag(k)
 
-        q = torch.nn.functional.normalize(q, dim=-1)
-        k = torch.nn.functional.normalize(k, dim=-1)
+        q = q.reshape(b, self.num_heads, -1, h * w)
+        k = k.reshape(b, self.num_heads, -1, h * w)
+        v = v.reshape(b, self.num_heads, -1, h * w)
 
-        attn = (q @ k.transpose(-2, -1)) * self.temperature
-        attn = attn.softmax(dim=-1)
 
-        out = (attn @ v)
-        
-        out = rearrange(out, 'b head c (h w) -> b (head c) h w', head=self.num_heads, h=h, w=w)
+        q, k = F.normalize(q, dim=-1), F.normalize(k, dim=-1)
 
-        out = self.project_out(out)
+        attn = torch.softmax(torch.matmul(q, k.transpose(-2, -1).contiguous()) * self.temperature, dim=-1)
+        out = self.project_out(torch.matmul(attn, v).reshape(b, -1, h, w))
         return out
-
 
 
 ##########################################################################
