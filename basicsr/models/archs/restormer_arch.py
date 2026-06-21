@@ -2,7 +2,7 @@
 ## Syed Waqas Zamir, Aditya Arora, Salman Khan, Munawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang
 ## https://arxiv.org/abs/2111.09881
 
-
+import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -70,6 +70,49 @@ class LayerNorm(nn.Module):
         return to_4d(self.body(to_3d(x)), h, w)
 
 
+class ECA(nn.Module):
+    """Constructs a ECA module.
+
+
+    Args:
+        channels: Number of channels in the input tensor
+        b: Hyper-parameter for adaptive kernel size formulation. Default: 1
+        gamma: Hyper-parameter for adaptive kernel size formulation. Default: 2 
+    """
+    def __init__(self, channels, b=1, gamma=2):
+        super(ECA, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.channels = channels
+        self.b = b
+        self.gamma = gamma
+        self.conv = nn.Conv1d(1, 1, kernel_size=self.kernel_size(), padding=(self.kernel_size() - 1) // 2, bias=False) 
+        self.sigmoid = nn.Sigmoid()
+
+
+    def kernel_size(self):
+        k = int(abs((math.log2(self.channels)/self.gamma)+ self.b/self.gamma))
+        out = k if k % 2 else k+1
+        return out
+
+
+    def forward(self, x):
+
+        x1=inv_mag(x)
+        # feature descriptor on the global spatial information
+        y = self.avg_pool(x1)
+
+
+        # Two different branches of ECA module
+        y = self.conv(y.squeeze(-1).transpose(-1, -2)).transpose(-1, -2).unsqueeze(-1)
+
+
+        # Multi-scale information fusion
+        y = self.sigmoid(y)
+
+
+        return x * y.expand_as(x)
+
+
 
 ##########################################################################
 ## Gated-Dconv Feed-Forward Network (GDFN) -> Purely Phaseformer
@@ -92,45 +135,6 @@ class FeedForward(nn.Module):
         x = F.gelu(x1) * x2
         x = self.project_out(x)
         return x
-
-
-
-##########################################################################
-## Multi-DConv Head Transposed Self-Attention (MDTA)
-# class Attention(nn.Module):
-#     def __init__(self, dim, num_heads, bias):
-#         super(Attention, self).__init__()
-#         self.num_heads = num_heads
-#         self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
-
-#         self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
-#         self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
-#         self.project_out = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
-        
-
-
-#     def forward(self, x):
-#         b,c,h,w = x.shape
-
-#         qkv = self.qkv_dwconv(self.qkv(x))
-#         q,k,v = qkv.chunk(3, dim=1)   
-        
-#         q = rearrange(q, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-#         k = rearrange(k, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-#         v = rearrange(v, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-
-#         q = torch.nn.functional.normalize(q, dim=-1)
-#         k = torch.nn.functional.normalize(k, dim=-1)
-
-#         attn = (q @ k.transpose(-2, -1)) * self.temperature
-#         attn = attn.softmax(dim=-1)
-
-#         out = (attn @ v)
-        
-#         out = rearrange(out, 'b head c (h w) -> b (head c) h w', head=self.num_heads, h=h, w=w)
-
-#         out = self.project_out(out)
-#         return out
 
 
 def inv_mag(x):
@@ -182,10 +186,52 @@ class TransformerBlock(nn.Module):
         self.ffn = FeedForward(dim, ffn_expansion_factor, bias)
 
     def forward(self, x):
-        x = x + self.attn(self.norm1(x))
-        x = x + self.ffn(self.norm2(x))
-
+        b, c, h, w = x.shape
+        x = x + self.attn(self.norm1(x.reshape(b, c, -1).transpose(-2, -1).contiguous()).transpose(-2, -1)
+						  .contiguous().reshape(b, c, h, w))
+        x = x + self.ffn(self.norm2(x.reshape(b, c, -1).transpose(-2, -1).contiguous()).transpose(-2, -1)
+						 .contiguous().reshape(b, c, h, w))
         return x
+
+
+
+
+##########################################################################
+## Multi-DConv Head Transposed Self-Attention (MDTA)
+# class Attention(nn.Module):
+#     def __init__(self, dim, num_heads, bias):
+#         super(Attention, self).__init__()
+#         self.num_heads = num_heads
+#         self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
+
+#         self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
+#         self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
+#         self.project_out = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
+        
+
+
+#     def forward(self, x):
+#         b,c,h,w = x.shape
+
+#         qkv = self.qkv_dwconv(self.qkv(x))
+#         q,k,v = qkv.chunk(3, dim=1)   
+        
+#         q = rearrange(q, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+#         k = rearrange(k, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+#         v = rearrange(v, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+
+#         q = torch.nn.functional.normalize(q, dim=-1)
+#         k = torch.nn.functional.normalize(k, dim=-1)
+
+#         attn = (q @ k.transpose(-2, -1)) * self.temperature
+#         attn = attn.softmax(dim=-1)
+
+#         out = (attn @ v)
+        
+#         out = rearrange(out, 'b head c (h w) -> b (head c) h w', head=self.num_heads, h=h, w=w)
+
+#         out = self.project_out(out)
+#         return out
 
 
 
@@ -246,6 +292,10 @@ class Restormer(nn.Module):
 
         self.patch_embed = OverlapPatchEmbed(inp_channels, dim)
 
+        self.eca_skip3 = ECA(int(dim*2**2))   
+        self.eca_skip2 = ECA(int(dim*2**1))   
+        self.eca_skip1 = ECA(dim)
+
         self.encoder_level1 = nn.Sequential(*[TransformerBlock(dim=dim, num_heads=heads[0], ffn_expansion_factor=ffn_expansion_factor, bias=bias, LayerNorm_type=LayerNorm_type) for i in range(num_blocks[0])])
         
         self.down1_2 = Downsample(dim) ## From Level 1 to Level 2
@@ -281,9 +331,11 @@ class Restormer(nn.Module):
         self.output = nn.Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
 
     def forward(self, inp_img):
-
+        
         inp_enc_level1 = self.patch_embed(inp_img) #[B, 48, H, W] -> restormer gives, [B, 16, H, W] for phaseformer
         out_enc_level1 = self.encoder_level1(inp_enc_level1)
+
+              
         
         inp_enc_level2 = self.down1_2(out_enc_level1)
         out_enc_level2 = self.encoder_level2(inp_enc_level2)
@@ -295,17 +347,17 @@ class Restormer(nn.Module):
         latent = self.latent(inp_enc_level4) #4th encoder output
                         
         inp_dec_level3 = self.up4_3(latent)
-        inp_dec_level3 = torch.cat([inp_dec_level3, out_enc_level3], 1)
+        inp_dec_level3 = torch.cat([inp_dec_level3, self.eca_skip3(out_enc_level3)], 1)
         inp_dec_level3 = self.reduce_chan_level3(inp_dec_level3) #ECA is used
         out_dec_level3 = self.decoder_level3(inp_dec_level3) 
 
         inp_dec_level2 = self.up3_2(out_dec_level3)
-        inp_dec_level2 = torch.cat([inp_dec_level2, out_enc_level2], 1)
+        inp_dec_level2 = torch.cat([inp_dec_level2, self.eca_skip2(out_enc_level2)], 1)
         inp_dec_level2 = self.reduce_chan_level2(inp_dec_level2) #ECA is used
         out_dec_level2 = self.decoder_level2(inp_dec_level2) 
 
         inp_dec_level1 = self.up2_1(out_dec_level2)
-        inp_dec_level1 = torch.cat([inp_dec_level1, out_enc_level1], 1) #ECA is used
+        inp_dec_level1 = torch.cat([inp_dec_level1, self.eca_skip1(out_enc_level1)], 1) #ECA is used
         out_dec_level1 = self.decoder_level1(inp_dec_level1)
         
         out_dec_level1 = self.refinement(out_dec_level1)
