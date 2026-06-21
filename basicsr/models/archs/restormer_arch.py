@@ -72,9 +72,10 @@ class LayerNorm(nn.Module):
 
 
 ##########################################################################
-## Gated-Dconv Feed-Forward Network (GDFN)
+## Gated-Dconv Feed-Forward Network (GDFN) -> Purely Same
 class FeedForward(nn.Module):
     def __init__(self, dim, ffn_expansion_factor, bias):
+
         super(FeedForward, self).__init__()
 
         hidden_features = int(dim*ffn_expansion_factor)
