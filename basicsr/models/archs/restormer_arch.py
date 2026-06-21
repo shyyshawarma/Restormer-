@@ -195,7 +195,7 @@ class Restormer(nn.Module):
         inp_channels=3, 
         out_channels=3, 
         dim = 48,
-        num_blocks = [4,6,6,8], 
+        num_blocks = [4,6,6,8],  #restormer has this half and [48,96,192,384] channels [16, 32, 64, 128] phaseformer
         num_refinement_blocks = 4,
         heads = [1,2,4,8],
         ffn_expansion_factor = 2.66,
@@ -244,7 +244,7 @@ class Restormer(nn.Module):
 
     def forward(self, inp_img):
 
-        inp_enc_level1 = self.patch_embed(inp_img)
+        inp_enc_level1 = self.patch_embed(inp_img) #[B, 48, H, W] -> restormer gives, [B, 16, H, W] for phaseformer
         out_enc_level1 = self.encoder_level1(inp_enc_level1)
         
         inp_enc_level2 = self.down1_2(out_enc_level1)
@@ -254,24 +254,25 @@ class Restormer(nn.Module):
         out_enc_level3 = self.encoder_level3(inp_enc_level3) 
 
         inp_enc_level4 = self.down3_4(out_enc_level3)        
-        latent = self.latent(inp_enc_level4) 
+        latent = self.latent(inp_enc_level4) #4th encoder output
                         
         inp_dec_level3 = self.up4_3(latent)
         inp_dec_level3 = torch.cat([inp_dec_level3, out_enc_level3], 1)
-        inp_dec_level3 = self.reduce_chan_level3(inp_dec_level3)
+        inp_dec_level3 = self.reduce_chan_level3(inp_dec_level3) #ECA is used
         out_dec_level3 = self.decoder_level3(inp_dec_level3) 
 
         inp_dec_level2 = self.up3_2(out_dec_level3)
         inp_dec_level2 = torch.cat([inp_dec_level2, out_enc_level2], 1)
-        inp_dec_level2 = self.reduce_chan_level2(inp_dec_level2)
+        inp_dec_level2 = self.reduce_chan_level2(inp_dec_level2) #ECA is used
         out_dec_level2 = self.decoder_level2(inp_dec_level2) 
 
         inp_dec_level1 = self.up2_1(out_dec_level2)
-        inp_dec_level1 = torch.cat([inp_dec_level1, out_enc_level1], 1)
+        inp_dec_level1 = torch.cat([inp_dec_level1, out_enc_level1], 1) #ECA is used
         out_dec_level1 = self.decoder_level1(inp_dec_level1)
         
         out_dec_level1 = self.refinement(out_dec_level1)
-
+        #out_dec_level1 is final output
+        
         #### For Dual-Pixel Defocus Deblurring Task ####
         if self.dual_pixel_task:
             out_dec_level1 = out_dec_level1 + self.skip_conv(inp_enc_level1)
