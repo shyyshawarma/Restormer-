@@ -1,7 +1,6 @@
-## Restormer: Efficient Transformer for High-Resolution Image Restoration
-## Syed Waqas Zamir, Aditya Arora, Salman Khan, Munawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang
-## https://arxiv.org/abs/2111.09881
-
+# ## Restormer: Efficient Transformer for High-Resolution Image Restoration
+# ## Syed Waqas Zamir, Aditya Arora, Salman Khan, Munawar Hayat, Fahad Shahbaz Khan, and Ming-Hsuan Yang
+# ## https://arxiv.org/abs/2111.09881
 import math
 import torch
 import torch.nn as nn
@@ -69,6 +68,75 @@ class LayerNorm(nn.Module):
         h, w = x.shape[-2:]
         return to_4d(self.body(to_3d(x)), h, w)
 
+def inv_mag(x):
+  fft_ = torch.fft.fft2(x)
+  fft_ = torch.fft.ifft2(1*torch.exp(1j*(fft_.angle())))
+  return fft_.real
+
+
+##########################################################################
+## Gated-Dconv Feed-Forward Network (GDFN)
+class FeedForward(nn.Module):
+    def __init__(self, dim, ffn_expansion_factor, bias):
+        super(FeedForward, self).__init__()
+
+        hidden_features = int(dim*ffn_expansion_factor)
+
+        self.project_in = nn.Conv2d(dim, hidden_features*2, kernel_size=1, bias=bias)
+
+        self.dwconv = nn.Conv2d(hidden_features*2, hidden_features*2, kernel_size=3, stride=1, padding=1, groups=hidden_features*2, bias=bias)
+
+        self.project_out = nn.Conv2d(hidden_features, dim, kernel_size=1, bias=bias)
+
+    def forward(self, x):
+        x = self.project_in(x)
+        x1, x2 = self.dwconv(x).chunk(2, dim=1)
+        x = F.gelu(x1) * x2
+        x = self.project_out(x)
+        return x
+
+
+
+##########################################################################
+## Multi-DConv Head Transposed Self-Attention (MDTA)
+class Attention(nn.Module):
+    def __init__(self, dim, num_heads, bias):
+        super(Attention, self).__init__()
+        self.num_heads = num_heads
+        self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
+
+        self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
+        self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
+        self.project_out = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
+        
+
+
+    def forward(self, x):
+        b,c,h,w = x.shape
+
+        qkv = self.qkv_dwconv(self.qkv(x))
+        q,k,v = qkv.chunk(3, dim=1)   
+
+        q = inv_mag(q)   
+        k = inv_mag(k)  
+        
+        q = rearrange(q, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+        k = rearrange(k, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+        v = rearrange(v, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
+
+        q = torch.nn.functional.normalize(q, dim=-1)
+        k = torch.nn.functional.normalize(k, dim=-1)
+
+        attn = (q @ k.transpose(-2, -1)) * self.temperature
+        attn = attn.softmax(dim=-1)
+
+        out = (attn @ v)
+        
+        out = rearrange(out, 'b head c (h w) -> b (head c) h w', head=self.num_heads, h=h, w=w)
+
+        out = self.project_out(out)
+        return out
+
 
 class ECA(nn.Module):
     """Constructs a ECA module.
@@ -114,66 +182,6 @@ class ECA(nn.Module):
 
 
 
-##########################################################################
-## Gated-Dconv Feed-Forward Network (GDFN) -> Purely Phaseformer
-class FeedForward(nn.Module):
-    def __init__(self, dim, ffn_expansion_factor, bias):
-
-        super(FeedForward, self).__init__()
-
-        hidden_features = int(dim*ffn_expansion_factor)
-
-        self.project_in = nn.Conv2d(dim, hidden_features*2, kernel_size=1, bias=bias)
-
-        self.dwconv = nn.Conv2d(hidden_features*2, hidden_features*2, kernel_size=3, stride=1, padding=1, groups=hidden_features*2, bias=bias)
-
-        self.project_out = nn.Conv2d(hidden_features, dim, kernel_size=1, bias=bias)
-
-    def forward(self, x):
-        x = self.project_in(x)
-        x1, x2 = self.dwconv(x).chunk(2, dim=1)
-        x = F.gelu(x1) * x2
-        x = self.project_out(x)
-        return x
-
-
-def inv_mag(x):
-  fft_ = torch.fft.fft2(x)
-  fft_ = torch.fft.ifft2(1*torch.exp(1j*(fft_.angle())))
-  return fft_.real
-
-class Attention(nn.Module):
-    def __init__(self, dim, num_heads, bias):
-        super(Attention, self).__init__()
-        self.num_heads = num_heads
-        self.temperature = nn.Parameter(torch.ones(1,num_heads, 1, 1))
-
-        self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
-        self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
-        self.project_out = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
-        
-
-
-    def forward(self, x):
-        b,c,h,w = x.shape
-
-        qkv = self.qkv_dwconv(self.qkv(x))
-        q,k,v = qkv.chunk(3, dim=1)   
-        
-        q = inv_mag(q)
-        k = inv_mag(k)
-
-        q = q.reshape(b, self.num_heads, -1, h * w)
-        k = k.reshape(b, self.num_heads, -1, h * w)
-        v = v.reshape(b, self.num_heads, -1, h * w)
-
-
-        q, k = F.normalize(q, dim=-1), F.normalize(k, dim=-1)
-
-        attn = torch.softmax(torch.matmul(q, k.transpose(-2, -1).contiguous()) * self.temperature, dim=-1)
-        out = self.project_out(torch.matmul(attn, v).reshape(b, -1, h, w))
-        return out
-
 
 ##########################################################################
 class TransformerBlock(nn.Module):
@@ -186,52 +194,10 @@ class TransformerBlock(nn.Module):
         self.ffn = FeedForward(dim, ffn_expansion_factor, bias)
 
     def forward(self, x):
-        b, c, h, w = x.shape
-        x = x + self.attn(self.norm1(x.reshape(b, c, -1).transpose(-2, -1).contiguous()).transpose(-2, -1)
-						  .contiguous().reshape(b, c, h, w))
-        x = x + self.ffn(self.norm2(x.reshape(b, c, -1).transpose(-2, -1).contiguous()).transpose(-2, -1)
-						 .contiguous().reshape(b, c, h, w))
+        x = x + self.attn(self.norm1(x))
+        x = x + self.ffn(self.norm2(x))
+
         return x
-
-
-
-
-##########################################################################
-## Multi-DConv Head Transposed Self-Attention (MDTA)
-# class Attention(nn.Module):
-#     def __init__(self, dim, num_heads, bias):
-#         super(Attention, self).__init__()
-#         self.num_heads = num_heads
-#         self.temperature = nn.Parameter(torch.ones(num_heads, 1, 1))
-
-#         self.qkv = nn.Conv2d(dim, dim*3, kernel_size=1, bias=bias)
-#         self.qkv_dwconv = nn.Conv2d(dim*3, dim*3, kernel_size=3, stride=1, padding=1, groups=dim*3, bias=bias)
-#         self.project_out = nn.Conv2d(dim, dim, kernel_size=1, bias=bias)
-        
-
-
-#     def forward(self, x):
-#         b,c,h,w = x.shape
-
-#         qkv = self.qkv_dwconv(self.qkv(x))
-#         q,k,v = qkv.chunk(3, dim=1)   
-        
-#         q = rearrange(q, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-#         k = rearrange(k, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-#         v = rearrange(v, 'b (head c) h w -> b head c (h w)', head=self.num_heads)
-
-#         q = torch.nn.functional.normalize(q, dim=-1)
-#         k = torch.nn.functional.normalize(k, dim=-1)
-
-#         attn = (q @ k.transpose(-2, -1)) * self.temperature
-#         attn = attn.softmax(dim=-1)
-
-#         out = (attn @ v)
-        
-#         out = rearrange(out, 'b head c (h w) -> b (head c) h w', head=self.num_heads, h=h, w=w)
-
-#         out = self.project_out(out)
-#         return out
 
 
 
@@ -373,4 +339,3 @@ class Restormer(nn.Module):
 
 
         return out_dec_level1
-
