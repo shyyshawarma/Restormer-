@@ -6,5 +6,6 @@
 *.pth
 *.mat
 *.npy
+*.state
 .DS_Store
 
