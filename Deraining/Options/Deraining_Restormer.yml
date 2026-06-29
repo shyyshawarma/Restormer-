@@ -61,6 +61,7 @@ network_g:
   bias: False
   LayerNorm_type: WithBias
   dual_pixel_task: False
+  multiscale: True
 
 
 # path
@@ -97,9 +98,12 @@ train:
   
   # losses
   pixel_opt:
-    type: L1Loss
-    loss_weight: 1
-    reduction: mean
+    type: MultiscaleLoss   # softmax-weighted: Charbonnier + VGG Perceptual + Gradient + MS-SSIM
+    loss_weight: 1         # overall scale; individual weights are learnable (softmax)
+    ## Alternative: use L1Loss for a simpler baseline
+    # type: L1Loss
+    # loss_weight: 1
+    # reduction: mean
 
 # validation settings
 val:

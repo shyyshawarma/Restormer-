@@ -250,8 +250,8 @@ class Restormer(nn.Module):
         heads = [1,2,4,8],
         ffn_expansion_factor = 2.66,
         bias = False,
-        LayerNorm_type = 'WithBias',   ## Other option 'BiasFree'
-        dual_pixel_task = False        ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        dual_pixel_task = False,        ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        multiscale = False
     ):
 
         super(Restormer, self).__init__()
@@ -296,6 +296,13 @@ class Restormer(nn.Module):
             
         self.output = nn.Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
 
+        self.multiscale = multiscale
+        if self.multiscale:
+            self.ups1 = Upsample(int(dim*2**1))
+            self.outputl = nn.Conv2d(int(dim*2**1), 8, kernel_size=3, padding=1, bias=bias)
+            self.output1 = nn.Conv2d(dim, 8, kernel_size=3, padding=1, bias=bias)
+            self.outputx = nn.Conv2d(8, out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
+
     def forward(self, inp_img):
         
         inp_enc_level1 = self.patch_embed(inp_img) #[B, 48, H, W] -> restormer gives, [B, 16, H, W] for phaseformer
@@ -336,6 +343,12 @@ class Restormer(nn.Module):
             out_dec_level1 = out_dec_level1 + self.skip_conv(inp_enc_level1)
             out_dec_level1 = self.output(out_dec_level1)
         ###########################
+        elif self.multiscale:
+            if self.training:
+                outi = self.ups1(out_dec_level1)
+                return self.outputx(self.outputl(out_dec_level1)), self.outputx(self.output1(outi))
+            else:
+                return self.outputx(self.outputl(out_dec_level1))
         else:
             out_dec_level1 = self.output(out_dec_level1) + inp_img
 

@@ -123,6 +123,12 @@ class ImageCleanModel(BaseModel):
                 logger = get_root_logger()
                 logger.warning(f'Params {k} will not be optimized.')
 
+        # Also include learnable loss parameters (e.g. MultiscaleLoss softmax weights)
+        if hasattr(self, 'cri_pix'):
+            for v in self.cri_pix.parameters():
+                if v.requires_grad:
+                    optim_params.append(v)
+
         optim_type = train_opt['optim_g'].pop('type')
         if optim_type == 'Adam':
             self.optimizer_g = torch.optim.Adam(optim_params, **train_opt['optim_g'])
@@ -149,22 +155,38 @@ class ImageCleanModel(BaseModel):
     def optimize_parameters(self, current_iter):
         self.optimizer_g.zero_grad()
         preds = self.net_g(self.lq)
-        if not isinstance(preds, list):
-            preds = [preds]
-
-        self.output = preds[-1]
-
+        
         loss_dict = OrderedDict()
-        # pixel loss
-        l_pix = 0.
-        for pred in preds:
-            l_pix += self.cri_pix(pred, self.gt)
+        
+        if isinstance(preds, (list, tuple)) and len(preds) == 2:
+            out_L, out_H = preds
+            self.output = out_L
+            
+            # Dynamically upscale the target to match the high-res output
+            gt_H = F.interpolate(self.gt, scale_factor=2, mode='bilinear', align_corners=False)
+            
+            l_pix_L = self.cri_pix(out_L, self.gt)
+            l_pix_H = self.cri_pix(out_H, gt_H)
+            l_pix = 0.6 * l_pix_L + 0.4 * l_pix_H
+            
+            loss_dict['l_pix_L'] = l_pix_L
+            loss_dict['l_pix_H'] = l_pix_H
+        else:
+            if not isinstance(preds, (list, tuple)):
+                preds = [preds]
+            self.output = preds[-1]
+            l_pix = 0.
+            for pred in preds:
+                l_pix += self.cri_pix(pred, self.gt)
 
         loss_dict['l_pix'] = l_pix
 
         l_pix.backward()
         if self.opt['train']['use_grad_clip']:
-            torch.nn.utils.clip_grad_norm_(self.net_g.parameters(), 0.01)
+            all_params = list(self.net_g.parameters())
+            if hasattr(self, 'cri_pix'):
+                all_params += list(self.cri_pix.parameters())
+            torch.nn.utils.clip_grad_norm_(all_params, 0.01)
         self.optimizer_g.step()
 
         self.log_dict = self.reduce_loss_dict(loss_dict)
@@ -192,15 +214,15 @@ class ImageCleanModel(BaseModel):
             self.net_g_ema.eval()
             with torch.no_grad():
                 pred = self.net_g_ema(img)
-            if isinstance(pred, list):
-                pred = pred[-1]
+            if isinstance(pred, (list, tuple)):
+                pred = pred[0]
             self.output = pred
         else:
             self.net_g.eval()
             with torch.no_grad():
                 pred = self.net_g(img)
-            if isinstance(pred, list):
-                pred = pred[-1]
+            if isinstance(pred, (list, tuple)):
+                pred = pred[0]
             self.output = pred
             self.net_g.train()
 
