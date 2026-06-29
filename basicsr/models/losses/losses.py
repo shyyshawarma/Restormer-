@@ -223,7 +223,19 @@ class MultiscaleLoss(nn.Module):
         l_grad  = self.gradient(pred, target)
 
         if self.ms_ssim is not None:
-            l_ms = 1.0 - self.ms_ssim(pred, target)   # higher MS-SSIM → lower loss
+            # MS-SSIM requires image size > 160 (min 161) due to 4 downsamplings
+            min_size = 161
+            pad_h = max(0, min_size - pred.size(2))
+            pad_w = max(0, min_size - pred.size(3))
+            
+            if pad_h > 0 or pad_w > 0:
+                pred_ms = F.pad(pred, (0, pad_w, 0, pad_h), mode='reflect')
+                target_ms = F.pad(target, (0, pad_w, 0, pad_h), mode='reflect')
+            else:
+                pred_ms = pred
+                target_ms = target
+
+            l_ms = 1.0 - self.ms_ssim(pred_ms, target_ms)   # higher MS-SSIM → lower loss
             loss = (w[0, 0] * l_charb + w[0, 1] * l_per +
                     w[0, 2] * l_grad  + w[0, 3] * l_ms)
         else:
