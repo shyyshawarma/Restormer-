@@ -78,6 +78,10 @@ for dataset in datasets:
             input_ = F.pad(input_, (0,padw,0,padh), 'reflect')
 
             restored = model_restoration(input_)
+            
+            # Handle multi-scale output (extract 1x if list)
+            if isinstance(restored, list):
+                restored = restored[0]
 
             # Unpad images to original dimensions
             restored = restored[:,:,:h,:w]

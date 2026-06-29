@@ -129,6 +129,9 @@ with torch.no_grad():
         if args.tile is None:
             ## Testing on the original resolution image
             restored = model(input_)
+            # Handle multi-scale output (extract 1x if list)
+            if isinstance(restored, list):
+                restored = restored[0]
         else:
             # test the image tile by tile
             b, c, h, w = input_.shape
@@ -146,6 +149,9 @@ with torch.no_grad():
                 for w_idx in w_idx_list:
                     in_patch = input_[..., h_idx:h_idx+tile, w_idx:w_idx+tile]
                     out_patch = model(in_patch)
+                    # Handle multi-scale output (extract 1x if list)
+                    if isinstance(out_patch, list):
+                        out_patch = out_patch[0]
                     out_patch_mask = torch.ones_like(out_patch)
 
                     E[..., h_idx:(h_idx+tile), w_idx:(w_idx+tile)].add_(out_patch)

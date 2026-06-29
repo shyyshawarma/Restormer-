@@ -120,3 +120,64 @@ class CharbonnierLoss(nn.Module):
         # loss = torch.sum(torch.sqrt(diff * diff + self.eps))
         loss = torch.mean(torch.sqrt((diff * diff) + (self.eps*self.eps)))
         return loss
+
+
+class PhaseFormerMultiScaleLoss(nn.Module):
+    """Multi-scale loss for 1x + 2x super-resolution outputs.
+    
+    Applies L1 loss to both 1x and 2x outputs.
+    For 2x, the ground truth is upsampled using bilinear interpolation.
+    
+    Args:
+        loss_weight (float): Overall loss weight. Default: 1.0.
+        reduction (str): Specifies the reduction to apply to the output.
+            Supported choices are 'none' | 'mean' | 'sum'. Default: 'mean'.
+        weight_1x (float): Weight for 1x loss. Default: 0.5.
+        weight_2x (float): Weight for 2x loss. Default: 0.5.
+    """
+    
+    def __init__(self, loss_weight=1.0, reduction='mean', weight_1x=0.5, weight_2x=0.5):
+        super(PhaseFormerMultiScaleLoss, self).__init__()
+        if reduction not in ['none', 'mean', 'sum']:
+            raise ValueError(f'Unsupported reduction mode: {reduction}. '
+                             f'Supported ones are: {_reduction_modes}')
+        
+        self.loss_weight = loss_weight
+        self.reduction = reduction
+        self.weight_1x = weight_1x
+        self.weight_2x = weight_2x
+        
+        # Ensure weights sum to 1 (normalize)
+        total_weight = weight_1x + weight_2x
+        self.weight_1x = weight_1x / total_weight if total_weight > 0 else 0.5
+        self.weight_2x = weight_2x / total_weight if total_weight > 0 else 0.5
+    
+    def forward(self, pred, target, weight=None, **kwargs):
+        """
+        Args:
+            pred (list of Tensors): [pred_1x, pred_2x] where:
+                pred_1x: shape (N, C, H, W) - 1x resolution output
+                pred_2x: shape (N, C, 2H, 2W) - 2x resolution output
+            target (Tensor): shape (N, C, H, W) - ground truth at 1x resolution
+            weight (Tensor, optional): not used for multi-scale
+        """
+        if not isinstance(pred, (list, tuple)) or len(pred) != 2:
+            raise ValueError(f'Expected pred to be a list of 2 tensors [pred_1x, pred_2x], got {type(pred)}')
+        
+        pred_1x, pred_2x = pred
+        
+        # Loss for 1x branch
+        loss_1x = l1_loss(pred_1x, target, weight, reduction=self.reduction)
+        
+        # Upsample target to 2x for 2x branch (bilinear interpolation)
+        # Note: target is (N, C, H, W), we need to upscale to (N, C, 2H, 2W)
+        _, _, h, w = target.shape
+        target_2x = F.interpolate(target, size=(h*2, w*2), mode='bilinear', align_corners=False)
+        
+        # Loss for 2x branch
+        loss_2x = l1_loss(pred_2x, target_2x, weight, reduction=self.reduction)
+        
+        # Weighted combination
+        total_loss = self.loss_weight * (self.weight_1x * loss_1x + self.weight_2x * loss_2x)
+        
+        return total_loss

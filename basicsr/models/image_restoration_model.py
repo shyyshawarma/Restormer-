@@ -157,8 +157,15 @@ class ImageCleanModel(BaseModel):
         loss_dict = OrderedDict()
         # pixel loss
         l_pix = 0.
-        for pred in preds:
-            l_pix += self.cri_pix(pred, self.gt)
+        
+        # Check if using PhaseFormerMultiScaleLoss (which expects list of [pred_1x, pred_2x])
+        if self.cri_pix.__class__.__name__ == 'PhaseFormerMultiScaleLoss':
+            # For multi-scale loss, pass all predictions directly as a list
+            l_pix = self.cri_pix(preds, self.gt)
+        else:
+            # For standard losses, apply to each prediction (intermediate supervision)
+            for pred in preds:
+                l_pix += self.cri_pix(pred, self.gt)
 
         loss_dict['l_pix'] = l_pix
 

@@ -239,6 +239,23 @@ class Upsample(nn.Module):
         return self.body(x)
 
 ##########################################################################
+## PhaseFormer Multi-Scale Upsampler
+## Upsamples features from (B, C, H, W) to (B, C/2, 2H, 2W)
+## Used for 2x super-resolution branch in multi-scale output mode
+class PhaseFormerUpsampler(nn.Module):
+    def __init__(self, n_feat):
+        super(PhaseFormerUpsampler, self).__init__()
+        # Conv: (B, C, H, W) -> (B, 2C, H, W)
+        # PixelShuffle(2): (B, 2C, H, W) -> (B, C/2, 2H, 2W)
+        self.body = nn.Sequential(
+            nn.Conv2d(n_feat, n_feat*2, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.PixelShuffle(2)
+        )
+
+    def forward(self, x):
+        return self.body(x)
+
+##########################################################################
 ##---------- Restormer -----------------------
 class Restormer(nn.Module):
     def __init__(self, 
@@ -251,7 +268,8 @@ class Restormer(nn.Module):
         ffn_expansion_factor = 2.66,
         bias = False,
         LayerNorm_type = 'WithBias',   ## Other option 'BiasFree'
-        dual_pixel_task = False        ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        dual_pixel_task = False,       ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
+        enable_multi_scale_output = False  ## True to enable 1x + 2x multi-scale output (only when dual_pixel_task=False)
     ):
 
         super(Restormer, self).__init__()
@@ -296,6 +314,22 @@ class Restormer(nn.Module):
             
         self.output = nn.Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
 
+        #### For Multi-Scale Output (1x + 2x Super-Resolution) ####
+        self.enable_multi_scale_output = enable_multi_scale_output
+        if self.enable_multi_scale_output and not self.dual_pixel_task:
+            # Intermediate projection: (B, 96, H, W) -> (B, 48, H, W)
+            self.inter_projection = nn.Conv2d(int(dim*2**1), dim, kernel_size=1, bias=bias)
+            
+            # 2x Upsampler: (B, 96, H, W) -> (B, 48, 2H, 2W)
+            self.upsample_2x = PhaseFormerUpsampler(int(dim*2**1))
+            
+            # 1x Output head: (B, 48, H, W) -> (B, out_channels, H, W)
+            self.output_1x = nn.Conv2d(dim, out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
+            
+            # 2x Output head: (B, 48, 2H, 2W) -> (B, out_channels, 2H, 2W)
+            self.output_2x = nn.Conv2d(dim, out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
+        ###########################
+
     def forward(self, inp_img):
         
         inp_enc_level1 = self.patch_embed(inp_img) #[B, 48, H, W] -> restormer gives, [B, 16, H, W] for phaseformer
@@ -323,21 +357,34 @@ class Restormer(nn.Module):
         out_dec_level2 = self.decoder_level2(inp_dec_level2) 
         #(1, 96, 128, 128)
 
-
         inp_dec_level1 = self.up2_1(out_dec_level2) #(1,48,256,256)
         inp_dec_level1 = torch.cat([inp_dec_level1, self.eca_skip1(out_enc_level1)], 1) #ECA is used
         out_dec_level1 = self.decoder_level1(inp_dec_level1)
         
         out_dec_level1 = self.refinement(out_dec_level1)
-        #out_dec_level1 is final output
+        #out_dec_level1 is final output: (B, 96, H, W)
         
         #### For Dual-Pixel Defocus Deblurring Task ####
         if self.dual_pixel_task:
             out_dec_level1 = out_dec_level1 + self.skip_conv(inp_enc_level1)
             out_dec_level1 = self.output(out_dec_level1)
         ###########################
+        #### For Multi-Scale Output (1x + 2x) ####
+        elif self.enable_multi_scale_output:
+            # refined_feat: (B, 96, H, W)
+            # 1x Branch: (B, 96, H, W) -> (B, 48, H, W) -> (B, 3, H, W)
+            feat_1x = self.inter_projection(out_dec_level1)  # (B, 48, H, W)
+            img_1x = self.output_1x(feat_1x) + inp_img  # (B, 3, H, W) with residual
+            
+            # 2x Branch: (B, 96, H, W) -> (B, 48, 2H, 2W) -> (B, 3, 2H, 2W)
+            feat_2x = self.upsample_2x(out_dec_level1)  # (B, 48, 2H, 2W)
+            img_2x = self.output_2x(feat_2x)  # (B, 3, 2H, 2W) - no residual for 2x
+            
+            # Return both outputs as a list
+            return [img_1x, img_2x]
+        ###########################
         else:
+            # Original single-scale output
             out_dec_level1 = self.output(out_dec_level1) + inp_img
-
 
         return out_dec_level1
