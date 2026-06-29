@@ -321,8 +321,10 @@ class Restormer(nn.Module):
         inp_dec_level2 = torch.cat([inp_dec_level2, self.eca_skip2(out_enc_level2)], 1)
         inp_dec_level2 = self.reduce_chan_level2(inp_dec_level2) #ECA is used
         out_dec_level2 = self.decoder_level2(inp_dec_level2) 
+        #(1, 96, 128, 128)
 
-        inp_dec_level1 = self.up2_1(out_dec_level2)
+
+        inp_dec_level1 = self.up2_1(out_dec_level2) #(1,48,256,256)
         inp_dec_level1 = torch.cat([inp_dec_level1, self.eca_skip1(out_enc_level1)], 1) #ECA is used
         out_dec_level1 = self.decoder_level1(inp_dec_level1)
         
