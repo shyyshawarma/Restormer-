@@ -295,7 +295,8 @@ class Restormer(nn.Module):
             self.skip_conv = nn.Conv2d(dim, int(dim*2**1), kernel_size=1, bias=bias)
         ###########################
             
-        self.output = nn.Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
+        if not multiscale:
+            self.output = nn.Conv2d(int(dim*2**1), out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
 
         self.multiscale = multiscale
         if self.multiscale:
