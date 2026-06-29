@@ -250,6 +250,7 @@ class Restormer(nn.Module):
         heads = [1,2,4,8],
         ffn_expansion_factor = 2.66,
         bias = False,
+        LayerNorm_type = 'WithBias',
         dual_pixel_task = False,        ## True for dual-pixel defocus deblurring only. Also set inp_channels=6
         multiscale = False
     ):
