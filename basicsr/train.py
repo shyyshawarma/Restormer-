@@ -5,6 +5,7 @@ import math
 import random
 import time
 import torch
+import pyfiglet
 from os import path as osp
 
 from basicsr.data import create_dataloader, create_dataset
@@ -317,4 +318,6 @@ def main():
 
 
 if __name__ == '__main__':
+    banner = pyfiglet.figlet_format("Restormer++", font="slant")
+    print(banner)
     main()

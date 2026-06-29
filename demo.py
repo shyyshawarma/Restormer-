@@ -129,6 +129,8 @@ with torch.no_grad():
         if args.tile is None:
             ## Testing on the original resolution image
             restored = model(input_)
+            if isinstance(restored, (list, tuple)):
+                restored = restored[0]
         else:
             # test the image tile by tile
             b, c, h, w = input_.shape
