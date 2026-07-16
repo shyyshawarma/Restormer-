@@ -7,5 +7,6 @@
 *.mat
 *.npy
 *.state
+*.bmp
 .DS_Store
 
