@@ -68,6 +68,8 @@ with torch.no_grad():
         for k in range(32):
             noisy_patch = torch.from_numpy(Inoisy[i,k,:,:,:]).unsqueeze(0).permute(0,3,1,2).cuda()
             restored_patch = model_restoration(noisy_patch)
+            if isinstance(restored_patch, (list, tuple)):
+                restored_patch = restored_patch[0]
             restored_patch = torch.clamp(restored_patch,0,1).cpu().detach().permute(0, 2, 3, 1).squeeze(0)
             restored[i,k,:,:,:] = restored_patch
 

@@ -93,6 +93,8 @@ for sigma_test in sigmas:
                 input_ = F.pad(input_, (0,padw,0,padh), 'reflect')
 
                 restored = model_restoration(input_)
+                if isinstance(restored, (list, tuple)):
+                    restored = restored[0]
 
                 # Unpad images to original dimensions
                 restored = restored[:,:,:h,:w]

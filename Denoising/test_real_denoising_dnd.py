@@ -82,6 +82,8 @@ with torch.no_grad():
             idx = [int(boxes[k,0]-1),int(boxes[k,2]),int(boxes[k,1]-1),int(boxes[k,3])]
             noisy_patch = torch.from_numpy(Inoisy[idx[0]:idx[1],idx[2]:idx[3],:]).unsqueeze(0).permute(0,3,1,2).cuda()
             restored_patch = model_restoration(noisy_patch)
+            if isinstance(restored_patch, (list, tuple)):
+                restored_patch = restored_patch[0]
             restored_patch = torch.clamp(restored_patch,0,1).cpu().detach().permute(0, 2, 3, 1).squeeze(0).numpy()
             Idenoised[k] = restored_patch
 

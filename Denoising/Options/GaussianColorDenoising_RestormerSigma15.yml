@@ -2,7 +2,7 @@
 name: GaussianColorDenoising_RestormerSigma15
 model_type: ImageCleanModel
 scale: 1
-num_gpu: 8  # set num_gpu: 0 for cpu mode
+num_gpu: 1  # set num_gpu: 0 for cpu mode
 manual_seed: 100
 
 # dataset and data loader settings
@@ -23,8 +23,8 @@ datasets:
 
     # data loader
     use_shuffle: true
-    num_worker_per_gpu: 8
-    batch_size_per_gpu: 8
+    num_worker_per_gpu: 4
+    batch_size_per_gpu: 1
 
     ### -------------Progressive training--------------------------
     mini_batch_sizes: [8,5,4,2,1,1]             # Batch size per gpu   
@@ -66,6 +66,7 @@ network_g:
   bias: False
   LayerNorm_type: BiasFree
   dual_pixel_task: False
+  multiscale: True
 
 
 # path
@@ -102,9 +103,8 @@ train:
   
   # losses
   pixel_opt:
-    type: L1Loss
+    type: MultiscaleLoss
     loss_weight: 1
-    reduction: mean
 
 # validation settings
 val:

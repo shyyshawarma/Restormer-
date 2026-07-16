@@ -138,8 +138,17 @@ class GradientLoss(nn.Module):
         self.l1 = nn.L1Loss()
 
     def forward(self, pred, target):
-        gradient_pred   = F.conv2d(pred,   self.weight_g, groups=3)
-        gradient_target = F.conv2d(target, self.weight_g, groups=3)
+        channels = pred.size(1)
+        if channels == 3:
+            weight = self.weight_g
+        elif channels == 1:
+            weight = self.weight_g[:1]
+        else:
+            single_kernel = torch.tensor([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=torch.float32)
+            weight = single_kernel.view(1, 1, 3, 3).repeat(channels, 1, 1, 1).to(pred.device)
+            
+        gradient_pred   = F.conv2d(pred,   weight.to(pred.device), groups=channels)
+        gradient_target = F.conv2d(target, weight.to(pred.device), groups=channels)
         return self.l1(gradient_pred, gradient_target)
 
 
@@ -170,6 +179,11 @@ class VGGPerceptualLoss(nn.Module):
         self.register_buffer('std',  torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
 
     def forward(self, pred, target, feature_layers=(0, 1, 2, 3)):
+        if pred.size(1) == 1:
+            pred = pred.repeat(1, 3, 1, 1)
+        if target.size(1) == 1:
+            target = target.repeat(1, 3, 1, 1)
+
         pred   = (pred   - self.mean) / self.std
         target = (target - self.mean) / self.std
         pred   = F.interpolate(pred,   mode='bilinear', size=(224, 224), align_corners=False)
@@ -235,12 +249,22 @@ class MultiscaleLoss(nn.Module):
                 pred_ms = pred
                 target_ms = target
 
-            l_ms = 1.0 - self.ms_ssim(pred_ms, target_ms)   # higher MS-SSIM → lower loss
+            channels = pred.size(1)
+            if not hasattr(self, 'ms_ssim_dict'):
+                self.ms_ssim_dict = {}
+            if channels not in self.ms_ssim_dict:
+                from pytorch_msssim import MS_SSIM
+                self.ms_ssim_dict[channels] = MS_SSIM(win_size=11, win_sigma=1.5, data_range=1,
+                                                      size_average=True, channel=channels).to(pred.device)
+            ms_ssim_fn = self.ms_ssim_dict[channels]
+
+            l_ms = 1.0 - ms_ssim_fn(pred_ms, target_ms)   # higher MS-SSIM → lower loss
             loss = (w[0, 0] * l_charb + w[0, 1] * l_per +
                     w[0, 2] * l_grad  + w[0, 3] * l_ms)
         else:
             loss = w[0, 0] * l_charb + w[0, 1] * l_per + w[0, 2] * l_grad
 
         return self.loss_weight * loss
+
 
 
