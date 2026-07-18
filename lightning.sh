@@ -3,7 +3,7 @@ set -e  # stop immediately if any command fails
 
 # # 1. Clone repo
 git clone -b denoise --single-branch https://github.com/shyyshawarma/Restormer-.git
-cd Restormer2
+cd Restormer-
 
 # # 2. Create experiment folder structure
 mkdir -p experiments/Deraining_Restormer/training_states
@@ -22,8 +22,8 @@ gdown "https://drive.google.com/file/d/1NKJrT9ICYHO_yHgV_BR_TnmyY4VGzZ7X/view?us
 cd ../../../
 
 # # 6. Download train/test data
-cd Deraining
-python download_data.py --data train-test
+cd Denoising
+python download_data.py --data train-test --noise gaussian
 cd ../
 
 # 7. Environment setup
