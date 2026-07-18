@@ -1,4 +1,4 @@
-2026-07-16 15:18:35,874 INFO: 
+2026-07-18 11:14:39,802 INFO: 
                 ____                _       _____  ____
                / __ ) ____ _ _____ (_)_____/ ___/ / __ \
               / __  |/ __ `// ___// // ___/\__ \ / /_/ /
@@ -11,10 +11,10 @@
   \____/ \____/ \____/ \____/  /_____/\____/ \___//_/|_|  (_)
     
 Version Information: 
-	BasicSR: 1.2.0+b06bb6b
+	BasicSR: 1.2.0+5346b9f
 	PyTorch: 2.5.1+cu121
 	TorchVision: 0.20.1+cu121
-2026-07-16 15:18:35,875 INFO: 
+2026-07-18 11:14:39,802 INFO: 
   name: GaussianGrayDenoising_Restormer
   model_type: ImageCleanModel
   scale: 1
@@ -36,7 +36,7 @@ Version Information:
       ]
       use_shuffle: True
       num_worker_per_gpu: 8
-      batch_size_per_gpu: 4
+      batch_size_per_gpu: 1
       mini_batch_sizes: [8, 5, 4, 2, 1, 1]
       iters: [92000, 64000, 48000, 36000, 36000, 24000]
       gt_size: 384
@@ -77,7 +77,7 @@ Version Information:
   path:[
     pretrain_network_g: None
     strict_load_g: True
-    resume_state: None
+    resume_state: experiments/GaussianGrayDenoising_Restormer/training_states/204000.state
     root: /home/aims-dtu/Restormer-
     experiments_root: /home/aims-dtu/Restormer-/experiments/GaussianGrayDenoising_Restormer
     models: /home/aims-dtu/Restormer-/experiments/GaussianGrayDenoising_Restormer/models
@@ -144,18 +144,19 @@ Version Information:
   rank: 0
   world_size: 1
 
-2026-07-16 15:18:36,026 INFO: Dataset Dataset_GaussianDenoising - TrainSet is created.
-2026-07-16 15:18:36,027 INFO: Training statistics:
+2026-07-18 11:14:40,292 INFO: Dataset Dataset_GaussianDenoising - TrainSet is created.
+2026-07-18 11:14:40,293 INFO: Training statistics:
 	Number of train images: 71580
 	Dataset enlarge ratio: 1
-	Batch size per gpu: 4
+	Batch size per gpu: 1
 	World size (gpu number): 1
-	Require iter number per epoch: 17895
-	Total epochs: 17; iters: 300000.
-2026-07-16 15:18:36,027 INFO: Dataset Dataset_GaussianDenoising - ValSet is created.
-2026-07-16 15:18:36,027 INFO: Number of val images/folders in ValSet: 68
-2026-07-16 15:18:36,820 INFO: Network: DistributedDataParallel - Restormer, with parameters: 26,284,551
-2026-07-16 15:18:36,820 INFO: Restormer(
+	Require iter number per epoch: 71580
+	Total epochs: 5; iters: 300000.
+2026-07-18 11:14:40,293 INFO: Dataset Dataset_GaussianDenoising - ValSet is created.
+2026-07-18 11:14:40,293 INFO: Number of val images/folders in ValSet: 68
+2026-07-18 11:14:40,293 INFO: Set pretrain_network_g to /home/aims-dtu/Restormer-/experiments/GaussianGrayDenoising_Restormer/models/net_g_204000.pth
+2026-07-18 11:14:41,685 INFO: Network: DistributedDataParallel - Restormer, with parameters: 26,284,551
+2026-07-18 11:14:41,685 INFO: Restormer(
   (patch_embed): OverlapPatchEmbed(
     (proj): Conv2d(1, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
   )
@@ -1030,149 +1031,67 @@ Version Information:
   (output1): Conv2d(48, 8, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
   (outputx): Conv2d(8, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
 )
-2026-07-16 15:18:38,499 INFO: Model [ImageCleanModel] is created.
-2026-07-16 15:19:02,705 INFO: Start training from epoch: 0, iter: 0
-2026-07-16 15:19:28,276 INFO: 
- Updating Patch_Size to 128 and Batch_Size to 8 
+2026-07-18 11:14:41,699 INFO: Loading Restormer model from /home/aims-dtu/Restormer-/experiments/GaussianGrayDenoising_Restormer/models/net_g_204000.pth.
+2026-07-18 11:14:47,325 INFO: Model [ImageCleanModel] is created.
+2026-07-18 11:14:47,335 INFO: Resuming training from epoch: 8, iter: 204000.
+2026-07-18 11:15:13,062 INFO: Start training from epoch: 8, iter: 204000
+2026-07-18 11:15:39,185 INFO: 
+ Updating Patch_Size to 256 and Batch_Size to 2 
 
-2026-07-16 15:30:32,161 INFO: [Gauss..][epoch:  0, iter:   1,000, lr:(3.000e-04,)] [eta: 2 days, 11:12:50, time (data): 0.665 (0.002)] l_pix_L: 2.4477e-01 l_pix_H: 2.3146e-01 l_pix: 2.3945e-01 
-2026-07-16 15:41:35,309 INFO: [Gauss..][epoch:  0, iter:   2,000, lr:(3.000e-04,)] [eta: 2 days, 8:57:21, time (data): 0.666 (0.002)] l_pix_L: 1.6259e-01 l_pix_H: 1.4163e-01 l_pix: 1.5421e-01 
-2026-07-16 15:52:45,913 INFO: [Gauss..][epoch:  0, iter:   3,000, lr:(3.000e-04,)] [eta: 2 days, 8:17:05, time (data): 0.670 (0.002)] l_pix_L: 9.3420e-02 l_pix_H: 7.5359e-02 l_pix: 8.6196e-02 
-2026-07-16 16:03:51,724 INFO: [Gauss..][epoch:  0, iter:   4,000, lr:(3.000e-04,)] [eta: 2 days, 7:45:27, time (data): 0.667 (0.002)] l_pix_L: 1.0555e-01 l_pix_H: 8.6746e-02 l_pix: 9.8030e-02 
-2026-07-16 16:03:51,725 INFO: Saving models and training states.
-2026-07-16 16:04:35,321 INFO: Validation ValSet,		 # psnr: 27.3719
-2026-07-16 16:16:13,067 INFO: [Gauss..][epoch:  0, iter:   5,000, lr:(3.000e-04,)] [eta: 2 days, 8:36:18, time (data): 0.675 (0.002)] l_pix_L: 7.9862e-02 l_pix_H: 6.7136e-02 l_pix: 7.4771e-02 
-2026-07-16 16:27:24,678 INFO: [Gauss..][epoch:  0, iter:   6,000, lr:(3.000e-04,)] [eta: 2 days, 8:09:08, time (data): 0.646 (0.002)] l_pix_L: 8.6528e-02 l_pix_H: 6.5096e-02 l_pix: 7.7955e-02 
-2026-07-16 16:38:39,817 INFO: [Gauss..][epoch:  0, iter:   7,000, lr:(3.000e-04,)] [eta: 2 days, 7:49:00, time (data): 0.692 (0.002)] l_pix_L: 8.6733e-02 l_pix_H: 6.3136e-02 l_pix: 7.7294e-02 
-2026-07-16 16:49:56,057 INFO: [Gauss..][epoch:  0, iter:   8,000, lr:(3.000e-04,)] [eta: 2 days, 7:31:45, time (data): 0.667 (0.002)] l_pix_L: 4.8210e-02 l_pix_H: 3.8278e-02 l_pix: 4.4237e-02 
-2026-07-16 16:49:56,057 INFO: Saving models and training states.
-2026-07-16 16:50:32,248 INFO: Validation ValSet,		 # psnr: 28.4784
-2026-07-16 17:01:51,194 INFO: [Gauss..][epoch:  0, iter:   9,000, lr:(3.000e-04,)] [eta: 2 days, 7:36:47, time (data): 0.693 (0.003)] l_pix_L: 3.8263e-02 l_pix_H: 2.7384e-02 l_pix: 3.3912e-02 
-2026-07-16 17:13:08,376 INFO: [Gauss..][epoch:  0, iter:  10,000, lr:(3.000e-04,)] [eta: 2 days, 7:20:05, time (data): 0.672 (0.002)] l_pix_L: 3.0738e-02 l_pix_H: 2.2354e-02 l_pix: 2.7384e-02 
-2026-07-16 17:24:18,655 INFO: [Gauss..][epoch:  0, iter:  11,000, lr:(3.000e-04,)] [eta: 2 days, 7:01:21, time (data): 0.659 (0.002)] l_pix_L: 4.8777e-02 l_pix_H: 2.7970e-02 l_pix: 4.0454e-02 
-2026-07-16 17:35:35,583 INFO: [Gauss..][epoch:  0, iter:  12,000, lr:(3.000e-04,)] [eta: 2 days, 6:46:32, time (data): 0.667 (0.002)] l_pix_L: 3.3446e-02 l_pix_H: 2.2982e-02 l_pix: 2.9260e-02 
-2026-07-16 17:35:35,584 INFO: Saving models and training states.
-2026-07-16 17:36:11,762 INFO: Validation ValSet,		 # psnr: 28.8813
-2026-07-16 17:47:26,729 INFO: [Gauss..][epoch:  0, iter:  13,000, lr:(3.000e-04,)] [eta: 2 days, 6:44:51, time (data): 0.714 (0.002)] l_pix_L: 6.1972e-02 l_pix_H: 3.2898e-02 l_pix: 5.0342e-02 
-2026-07-16 17:58:54,776 INFO: [Gauss..][epoch:  0, iter:  14,000, lr:(3.000e-04,)] [eta: 2 days, 6:33:52, time (data): 0.674 (0.002)] l_pix_L: 4.8931e-02 l_pix_H: 2.5890e-02 l_pix: 3.9715e-02 
-2026-07-16 18:10:07,210 INFO: [Gauss..][epoch:  0, iter:  15,000, lr:(3.000e-04,)] [eta: 2 days, 6:17:51, time (data): 0.672 (0.002)] l_pix_L: 3.5677e-02 l_pix_H: 1.9876e-02 l_pix: 2.9357e-02 
-2026-07-16 18:21:35,340 INFO: [Gauss..][epoch:  0, iter:  16,000, lr:(3.000e-04,)] [eta: 2 days, 6:07:06, time (data): 0.710 (0.002)] l_pix_L: 4.2311e-02 l_pix_H: 2.8316e-02 l_pix: 3.6713e-02 
-2026-07-16 18:21:35,346 INFO: Saving models and training states.
-2026-07-16 18:22:13,846 INFO: Validation ValSet,		 # psnr: 28.8164
-2026-07-16 18:33:34,465 INFO: [Gauss..][epoch:  0, iter:  17,000, lr:(3.000e-04,)] [eta: 2 days, 6:04:51, time (data): 0.673 (0.002)] l_pix_L: 3.7645e-02 l_pix_H: 2.4055e-02 l_pix: 3.2209e-02 
-2026-07-16 18:45:36,720 INFO: [Gauss..][epoch:  1, iter:  18,000, lr:(3.000e-04,)] [eta: 2 days, 6:02:20, time (data): 0.696 (0.002)] l_pix_L: 3.0568e-02 l_pix_H: 1.9619e-02 l_pix: 2.6188e-02 
-2026-07-16 18:56:53,009 INFO: [Gauss..][epoch:  1, iter:  19,000, lr:(3.000e-04,)] [eta: 2 days, 5:47:30, time (data): 0.665 (0.002)] l_pix_L: 3.1226e-02 l_pix_H: 2.2714e-02 l_pix: 2.7821e-02 
-2026-07-16 19:08:06,696 INFO: [Gauss..][epoch:  1, iter:  20,000, lr:(3.000e-04,)] [eta: 2 days, 5:32:24, time (data): 0.671 (0.002)] l_pix_L: 1.8744e-02 l_pix_H: 1.5803e-02 l_pix: 1.7567e-02 
-2026-07-16 19:08:06,706 INFO: Saving models and training states.
-2026-07-16 19:08:48,090 INFO: Validation ValSet,		 # psnr: 26.6745
-2026-07-16 19:20:22,031 INFO: [Gauss..][epoch:  1, iter:  21,000, lr:(3.000e-04,)] [eta: 2 days, 5:31:19, time (data): 0.690 (0.002)] l_pix_L: 2.6740e-02 l_pix_H: 2.0861e-02 l_pix: 2.4388e-02 
-2026-07-16 19:31:37,425 INFO: [Gauss..][epoch:  1, iter:  22,000, lr:(3.000e-04,)] [eta: 2 days, 5:16:37, time (data): 0.675 (0.002)] l_pix_L: 4.8858e-02 l_pix_H: 3.4228e-02 l_pix: 4.3006e-02 
-2026-07-16 19:42:49,921 INFO: [Gauss..][epoch:  1, iter:  23,000, lr:(3.000e-04,)] [eta: 2 days, 5:01:37, time (data): 0.676 (0.002)] l_pix_L: 1.6376e-02 l_pix_H: 1.0401e-02 l_pix: 1.3986e-02 
-2026-07-16 19:54:02,921 INFO: [Gauss..][epoch:  1, iter:  24,000, lr:(3.000e-04,)] [eta: 2 days, 4:47:02, time (data): 0.673 (0.002)] l_pix_L: 3.0316e-02 l_pix_H: 2.3581e-02 l_pix: 2.7622e-02 
-2026-07-16 19:54:02,922 INFO: Saving models and training states.
-2026-07-16 19:54:39,173 INFO: Validation ValSet,		 # psnr: 27.1943
-2026-07-16 20:05:52,134 INFO: [Gauss..][epoch:  1, iter:  25,000, lr:(3.000e-04,)] [eta: 2 days, 4:39:21, time (data): 0.677 (0.002)] l_pix_L: 1.9105e-02 l_pix_H: 1.5408e-02 l_pix: 1.7626e-02 
-2026-07-16 20:17:07,012 INFO: [Gauss..][epoch:  1, iter:  26,000, lr:(3.000e-04,)] [eta: 2 days, 4:25:20, time (data): 0.674 (0.002)] l_pix_L: 2.5486e-02 l_pix_H: 2.2823e-02 l_pix: 2.4421e-02 
-2026-07-16 20:28:38,274 INFO: [Gauss..][epoch:  1, iter:  27,000, lr:(3.000e-04,)] [eta: 2 days, 4:14:16, time (data): 0.681 (0.002)] l_pix_L: 2.1182e-02 l_pix_H: 1.7654e-02 l_pix: 1.9771e-02 
-2026-07-16 20:40:04,317 INFO: [Gauss..][epoch:  1, iter:  28,000, lr:(3.000e-04,)] [eta: 2 days, 4:02:20, time (data): 0.682 (0.002)] l_pix_L: 2.6154e-02 l_pix_H: 2.2378e-02 l_pix: 2.4644e-02 
-2026-07-16 20:40:04,318 INFO: Saving models and training states.
-2026-07-16 20:40:41,420 INFO: Validation ValSet,		 # psnr: 28.5173
-2026-07-16 20:52:11,215 INFO: [Gauss..][epoch:  1, iter:  29,000, lr:(3.000e-04,)] [eta: 2 days, 3:56:48, time (data): 0.709 (0.002)] l_pix_L: 3.6059e-02 l_pix_H: 3.0307e-02 l_pix: 3.3758e-02 
-2026-07-16 21:03:39,246 INFO: [Gauss..][epoch:  1, iter:  30,000, lr:(3.000e-04,)] [eta: 2 days, 3:44:59, time (data): 0.678 (0.002)] l_pix_L: 1.6937e-02 l_pix_H: 1.2736e-02 l_pix: 1.5257e-02 
-2026-07-16 21:15:08,409 INFO: [Gauss..][epoch:  1, iter:  31,000, lr:(3.000e-04,)] [eta: 2 days, 3:33:22, time (data): 0.668 (0.002)] l_pix_L: 2.6355e-02 l_pix_H: 1.9113e-02 l_pix: 2.3458e-02 
-2026-07-16 21:26:39,212 INFO: [Gauss..][epoch:  1, iter:  32,000, lr:(3.000e-04,)] [eta: 2 days, 3:21:59, time (data): 0.681 (0.002)] l_pix_L: 1.2727e-02 l_pix_H: 1.1471e-02 l_pix: 1.2225e-02 
-2026-07-16 21:26:39,213 INFO: Saving models and training states.
-2026-07-16 21:27:16,050 INFO: Validation ValSet,		 # psnr: 28.6049
-2026-07-16 21:38:38,124 INFO: [Gauss..][epoch:  1, iter:  33,000, lr:(3.000e-04,)] [eta: 2 days, 3:14:23, time (data): 0.679 (0.002)] l_pix_L: 1.7956e-02 l_pix_H: 1.5290e-02 l_pix: 1.6890e-02 
-2026-07-16 21:49:58,505 INFO: [Gauss..][epoch:  1, iter:  34,000, lr:(3.000e-04,)] [eta: 2 days, 3:01:30, time (data): 0.679 (0.002)] l_pix_L: 2.5169e-02 l_pix_H: 2.2255e-02 l_pix: 2.4004e-02 
-2026-07-16 22:01:36,722 INFO: [Gauss..][epoch:  1, iter:  35,000, lr:(3.000e-04,)] [eta: 2 days, 2:50:57, time (data): 0.684 (0.003)] l_pix_L: 2.3801e-02 l_pix_H: 2.0016e-02 l_pix: 2.2287e-02 
-2026-07-16 22:14:07,451 INFO: [Gauss..][epoch:  2, iter:  36,000, lr:(3.000e-04,)] [eta: 2 days, 2:46:46, time (data): 0.686 (0.002)] l_pix_L: 2.4084e-02 l_pix_H: 1.9225e-02 l_pix: 2.2140e-02 
-2026-07-16 22:14:07,465 INFO: Saving models and training states.
-2026-07-16 22:14:44,671 INFO: Validation ValSet,		 # psnr: 28.4322
-2026-07-16 22:26:10,817 INFO: [Gauss..][epoch:  2, iter:  37,000, lr:(3.000e-04,)] [eta: 2 days, 2:38:53, time (data): 0.706 (0.002)] l_pix_L: 8.6456e-03 l_pix_H: 7.2412e-03 l_pix: 8.0838e-03 
-2026-07-16 22:37:38,547 INFO: [Gauss..][epoch:  2, iter:  38,000, lr:(3.000e-04,)] [eta: 2 days, 2:26:42, time (data): 0.703 (0.002)] l_pix_L: 1.7637e-02 l_pix_H: 1.5028e-02 l_pix: 1.6594e-02 
-2026-07-16 22:49:03,561 INFO: [Gauss..][epoch:  2, iter:  39,000, lr:(3.000e-04,)] [eta: 2 days, 2:14:14, time (data): 0.673 (0.002)] l_pix_L: 2.2707e-02 l_pix_H: 1.8213e-02 l_pix: 2.0909e-02 
-2026-07-16 23:00:25,248 INFO: [Gauss..][epoch:  2, iter:  40,000, lr:(3.000e-04,)] [eta: 2 days, 2:01:28, time (data): 0.667 (0.002)] l_pix_L: 2.2858e-02 l_pix_H: 2.1616e-02 l_pix: 2.2361e-02 
-2026-07-16 23:00:25,249 INFO: Saving models and training states.
-2026-07-16 23:01:01,528 INFO: Validation ValSet,		 # psnr: 29.0293
-2026-07-16 23:12:24,697 INFO: [Gauss..][epoch:  2, iter:  41,000, lr:(3.000e-04,)] [eta: 2 days, 1:52:45, time (data): 0.663 (0.002)] l_pix_L: 2.8969e-02 l_pix_H: 2.2492e-02 l_pix: 2.6378e-02 
-2026-07-16 23:23:37,670 INFO: [Gauss..][epoch:  2, iter:  42,000, lr:(3.000e-04,)] [eta: 2 days, 1:39:07, time (data): 0.671 (0.002)] l_pix_L: 1.6102e-02 l_pix_H: 1.5408e-02 l_pix: 1.5824e-02 
-2026-07-16 23:34:52,920 INFO: [Gauss..][epoch:  2, iter:  43,000, lr:(3.000e-04,)] [eta: 2 days, 1:25:49, time (data): 0.700 (0.002)] l_pix_L: 1.9173e-02 l_pix_H: 1.5381e-02 l_pix: 1.7656e-02 
-2026-07-16 23:46:29,640 INFO: [Gauss..][epoch:  2, iter:  44,000, lr:(3.000e-04,)] [eta: 2 days, 1:14:41, time (data): 0.707 (0.002)] l_pix_L: 1.7759e-02 l_pix_H: 1.4139e-02 l_pix: 1.6311e-02 
-2026-07-16 23:46:29,641 INFO: Saving models and training states.
-2026-07-16 23:47:06,281 INFO: Validation ValSet,		 # psnr: 28.9921
-2026-07-16 23:58:30,770 INFO: [Gauss..][epoch:  2, iter:  45,000, lr:(3.000e-04,)] [eta: 2 days, 1:05:51, time (data): 0.668 (0.002)] l_pix_L: 2.1394e-02 l_pix_H: 1.7842e-02 l_pix: 1.9973e-02 
-2026-07-17 00:10:08,085 INFO: [Gauss..][epoch:  2, iter:  46,000, lr:(3.000e-04,)] [eta: 2 days, 0:54:41, time (data): 0.709 (0.002)] l_pix_L: 2.3778e-02 l_pix_H: 2.0431e-02 l_pix: 2.2439e-02 
-2026-07-17 00:21:30,840 INFO: [Gauss..][epoch:  2, iter:  47,000, lr:(3.000e-04,)] [eta: 2 days, 0:42:11, time (data): 0.708 (0.002)] l_pix_L: 2.1603e-02 l_pix_H: 1.7277e-02 l_pix: 1.9873e-02 
-2026-07-17 00:33:07,506 INFO: [Gauss..][epoch:  2, iter:  48,000, lr:(3.000e-04,)] [eta: 2 days, 0:30:57, time (data): 0.677 (0.002)] l_pix_L: 1.2274e-02 l_pix_H: 9.8857e-03 l_pix: 1.1318e-02 
-2026-07-17 00:33:07,506 INFO: Saving models and training states.
-2026-07-17 00:33:44,151 INFO: Validation ValSet,		 # psnr: 28.9507
-2026-07-17 00:45:00,782 INFO: [Gauss..][epoch:  2, iter:  49,000, lr:(3.000e-04,)] [eta: 2 days, 0:21:08, time (data): 0.675 (0.002)] l_pix_L: 2.4762e-02 l_pix_H: 2.1294e-02 l_pix: 2.3375e-02 
-2026-07-17 00:56:15,528 INFO: [Gauss..][epoch:  2, iter:  50,000, lr:(3.000e-04,)] [eta: 2 days, 0:08:00, time (data): 0.672 (0.002)] l_pix_L: 1.5220e-02 l_pix_H: 1.1660e-02 l_pix: 1.3796e-02 
-2026-07-17 01:07:28,694 INFO: [Gauss..][epoch:  2, iter:  51,000, lr:(3.000e-04,)] [eta: 1 day, 23:54:50, time (data): 0.662 (0.002)] l_pix_L: 2.3388e-02 l_pix_H: 2.0167e-02 l_pix: 2.2100e-02 
-2026-07-17 01:18:49,122 INFO: [Gauss..][epoch:  2, iter:  52,000, lr:(3.000e-04,)] [eta: 1 day, 23:42:18, time (data): 0.686 (0.002)] l_pix_L: 1.2893e-02 l_pix_H: 1.0269e-02 l_pix: 1.1843e-02 
-2026-07-17 01:18:49,131 INFO: Saving models and training states.
-2026-07-17 01:19:27,998 INFO: Validation ValSet,		 # psnr: 28.6627
-2026-07-17 01:30:53,557 INFO: [Gauss..][epoch:  2, iter:  53,000, lr:(3.000e-04,)] [eta: 1 day, 23:33:15, time (data): 0.703 (0.002)] l_pix_L: 2.1423e-02 l_pix_H: 1.8136e-02 l_pix: 2.0108e-02 
-2026-07-17 01:42:39,095 INFO: [Gauss..][epoch:  3, iter:  54,000, lr:(3.000e-04,)] [eta: 1 day, 23:22:38, time (data): 0.750 (0.002)] l_pix_L: 2.7689e-02 l_pix_H: 2.3972e-02 l_pix: 2.6203e-02 
-2026-07-17 01:53:54,504 INFO: [Gauss..][epoch:  3, iter:  55,000, lr:(3.000e-04,)] [eta: 1 day, 23:09:45, time (data): 0.674 (0.001)] l_pix_L: 2.5612e-02 l_pix_H: 2.2574e-02 l_pix: 2.4397e-02 
-2026-07-17 02:05:08,231 INFO: [Gauss..][epoch:  3, iter:  56,000, lr:(3.000e-04,)] [eta: 1 day, 22:56:48, time (data): 0.677 (0.002)] l_pix_L: 1.3999e-02 l_pix_H: 1.2037e-02 l_pix: 1.3215e-02 
-2026-07-17 02:05:08,231 INFO: Saving models and training states.
-2026-07-17 02:05:45,725 INFO: Validation ValSet,		 # psnr: 28.7929
-2026-07-17 02:16:59,962 INFO: [Gauss..][epoch:  3, iter:  57,000, lr:(3.000e-04,)] [eta: 1 day, 22:46:37, time (data): 0.676 (0.002)] l_pix_L: 1.7170e-02 l_pix_H: 1.4618e-02 l_pix: 1.6149e-02 
-2026-07-17 02:28:12,700 INFO: [Gauss..][epoch:  3, iter:  58,000, lr:(3.000e-04,)] [eta: 1 day, 22:33:39, time (data): 0.675 (0.002)] l_pix_L: 1.4999e-02 l_pix_H: 1.2659e-02 l_pix: 1.4063e-02 
-2026-07-17 02:39:26,376 INFO: [Gauss..][epoch:  3, iter:  59,000, lr:(3.000e-04,)] [eta: 1 day, 22:20:49, time (data): 0.672 (0.002)] l_pix_L: 1.1183e-02 l_pix_H: 9.4857e-03 l_pix: 1.0504e-02 
-2026-07-17 02:50:39,841 INFO: [Gauss..][epoch:  3, iter:  60,000, lr:(3.000e-04,)] [eta: 1 day, 22:08:01, time (data): 0.671 (0.002)] l_pix_L: 1.1590e-02 l_pix_H: 1.1057e-02 l_pix: 1.1377e-02 
-2026-07-17 02:50:39,842 INFO: Saving models and training states.
-2026-07-17 02:51:16,014 INFO: Validation ValSet,		 # psnr: 28.3817
-2026-07-17 03:02:29,198 INFO: [Gauss..][epoch:  3, iter:  61,000, lr:(3.000e-04,)] [eta: 1 day, 21:57:37, time (data): 0.665 (0.002)] l_pix_L: 2.3309e-02 l_pix_H: 1.8627e-02 l_pix: 2.1436e-02 
-2026-07-17 03:13:42,679 INFO: [Gauss..][epoch:  3, iter:  62,000, lr:(3.000e-04,)] [eta: 1 day, 21:44:53, time (data): 0.674 (0.002)] l_pix_L: 1.8558e-02 l_pix_H: 1.5412e-02 l_pix: 1.7300e-02 
-2026-07-17 03:24:56,171 INFO: [Gauss..][epoch:  3, iter:  63,000, lr:(3.000e-04,)] [eta: 1 day, 21:32:11, time (data): 0.667 (0.002)] l_pix_L: 3.1588e-02 l_pix_H: 2.4708e-02 l_pix: 2.8836e-02 
-2026-07-17 03:36:09,300 INFO: [Gauss..][epoch:  3, iter:  64,000, lr:(3.000e-04,)] [eta: 1 day, 21:19:31, time (data): 0.674 (0.002)] l_pix_L: 1.2280e-02 l_pix_H: 1.0522e-02 l_pix: 1.1577e-02 
-2026-07-17 03:36:09,301 INFO: Saving models and training states.
-2026-07-17 03:36:46,235 INFO: Validation ValSet,		 # psnr: 28.8768
-2026-07-17 03:47:59,332 INFO: [Gauss..][epoch:  3, iter:  65,000, lr:(3.000e-04,)] [eta: 1 day, 21:09:07, time (data): 0.671 (0.002)] l_pix_L: 1.7471e-02 l_pix_H: 1.6182e-02 l_pix: 1.6955e-02 
-2026-07-17 03:59:12,470 INFO: [Gauss..][epoch:  3, iter:  66,000, lr:(3.000e-04,)] [eta: 1 day, 20:56:30, time (data): 0.675 (0.002)] l_pix_L: 2.5655e-02 l_pix_H: 2.0884e-02 l_pix: 2.3747e-02 
-2026-07-17 04:10:24,945 INFO: [Gauss..][epoch:  3, iter:  67,000, lr:(3.000e-04,)] [eta: 1 day, 20:43:52, time (data): 0.673 (0.002)] l_pix_L: 2.1508e-02 l_pix_H: 1.9178e-02 l_pix: 2.0576e-02 
-2026-07-17 04:21:37,875 INFO: [Gauss..][epoch:  3, iter:  68,000, lr:(3.000e-04,)] [eta: 1 day, 20:31:19, time (data): 0.667 (0.002)] l_pix_L: 3.1744e-02 l_pix_H: 2.4814e-02 l_pix: 2.8972e-02 
-2026-07-17 04:21:37,876 INFO: Saving models and training states.
-2026-07-17 04:22:14,727 INFO: Validation ValSet,		 # psnr: 29.0765
-2026-07-17 04:33:27,039 INFO: [Gauss..][epoch:  3, iter:  69,000, lr:(3.000e-04,)] [eta: 1 day, 20:20:49, time (data): 0.675 (0.002)] l_pix_L: 2.5517e-02 l_pix_H: 2.0151e-02 l_pix: 2.3370e-02 
-2026-07-17 04:44:39,900 INFO: [Gauss..][epoch:  3, iter:  70,000, lr:(3.000e-04,)] [eta: 1 day, 20:08:18, time (data): 0.671 (0.002)] l_pix_L: 2.5688e-02 l_pix_H: 1.9785e-02 l_pix: 2.3327e-02 
-2026-07-17 04:55:53,051 INFO: [Gauss..][epoch:  3, iter:  71,000, lr:(3.000e-04,)] [eta: 1 day, 19:55:50, time (data): 0.657 (0.002)] l_pix_L: 7.8140e-03 l_pix_H: 7.1336e-03 l_pix: 7.5418e-03 
-2026-07-17 05:07:34,628 INFO: [Gauss..][epoch:  4, iter:  72,000, lr:(3.000e-04,)] [eta: 1 day, 19:44:54, time (data): 0.678 (0.002)] l_pix_L: 1.8561e-02 l_pix_H: 1.6048e-02 l_pix: 1.7556e-02 
-2026-07-17 05:07:34,628 INFO: Saving models and training states.
-2026-07-17 05:08:11,222 INFO: Validation ValSet,		 # psnr: 28.8510
-2026-07-17 05:19:24,780 INFO: [Gauss..][epoch:  4, iter:  73,000, lr:(3.000e-04,)] [eta: 1 day, 19:34:24, time (data): 0.676 (0.002)] l_pix_L: 2.1554e-02 l_pix_H: 1.9066e-02 l_pix: 2.0559e-02 
-2026-07-17 05:30:37,516 INFO: [Gauss..][epoch:  4, iter:  74,000, lr:(3.000e-04,)] [eta: 1 day, 19:21:57, time (data): 0.670 (0.002)] l_pix_L: 1.3156e-02 l_pix_H: 1.0941e-02 l_pix: 1.2270e-02 
-2026-07-17 05:41:50,280 INFO: [Gauss..][epoch:  4, iter:  75,000, lr:(3.000e-04,)] [eta: 1 day, 19:09:32, time (data): 0.671 (0.001)] l_pix_L: 2.5127e-02 l_pix_H: 1.9727e-02 l_pix: 2.2967e-02 
-2026-07-17 05:53:02,970 INFO: [Gauss..][epoch:  4, iter:  76,000, lr:(3.000e-04,)] [eta: 1 day, 18:57:09, time (data): 0.676 (0.002)] l_pix_L: 1.1075e-02 l_pix_H: 9.1448e-03 l_pix: 1.0303e-02 
-2026-07-17 05:53:02,971 INFO: Saving models and training states.
-2026-07-17 05:53:39,264 INFO: Validation ValSet,		 # psnr: 28.9815
-2026-07-17 06:04:51,441 INFO: [Gauss..][epoch:  4, iter:  77,000, lr:(3.000e-04,)] [eta: 1 day, 18:46:31, time (data): 0.663 (0.002)] l_pix_L: 1.3824e-02 l_pix_H: 1.1605e-02 l_pix: 1.2936e-02 
-2026-07-17 06:16:03,763 INFO: [Gauss..][epoch:  4, iter:  78,000, lr:(3.000e-04,)] [eta: 1 day, 18:34:09, time (data): 0.672 (0.002)] l_pix_L: 1.5228e-02 l_pix_H: 1.3280e-02 l_pix: 1.4449e-02 
-2026-07-17 06:27:15,906 INFO: [Gauss..][epoch:  4, iter:  79,000, lr:(3.000e-04,)] [eta: 1 day, 18:21:48, time (data): 0.671 (0.002)] l_pix_L: 1.3842e-02 l_pix_H: 1.2627e-02 l_pix: 1.3356e-02 
-2026-07-17 06:38:28,153 INFO: [Gauss..][epoch:  4, iter:  80,000, lr:(3.000e-04,)] [eta: 1 day, 18:09:28, time (data): 0.677 (0.002)] l_pix_L: 2.6432e-02 l_pix_H: 2.1312e-02 l_pix: 2.4384e-02 
-2026-07-17 06:38:28,153 INFO: Saving models and training states.
-2026-07-17 06:39:05,104 INFO: Validation ValSet,		 # psnr: 29.0694
-2026-07-17 06:50:20,626 INFO: [Gauss..][epoch:  4, iter:  81,000, lr:(3.000e-04,)] [eta: 1 day, 17:59:00, time (data): 0.671 (0.002)] l_pix_L: 2.6840e-02 l_pix_H: 2.2466e-02 l_pix: 2.5090e-02 
-2026-07-17 07:01:33,478 INFO: [Gauss..][epoch:  4, iter:  82,000, lr:(3.000e-04,)] [eta: 1 day, 17:46:44, time (data): 0.674 (0.002)] l_pix_L: 3.3855e-02 l_pix_H: 2.6933e-02 l_pix: 3.1086e-02 
-2026-07-17 07:12:46,195 INFO: [Gauss..][epoch:  4, iter:  83,000, lr:(3.000e-04,)] [eta: 1 day, 17:34:29, time (data): 0.670 (0.002)] l_pix_L: 1.5880e-02 l_pix_H: 1.4002e-02 l_pix: 1.5129e-02 
-2026-07-17 07:23:58,748 INFO: [Gauss..][epoch:  4, iter:  84,000, lr:(3.000e-04,)] [eta: 1 day, 17:22:15, time (data): 0.674 (0.002)] l_pix_L: 2.1748e-02 l_pix_H: 1.8241e-02 l_pix: 2.0345e-02 
-2026-07-17 07:23:58,749 INFO: Saving models and training states.
-2026-07-17 07:24:35,096 INFO: Validation ValSet,		 # psnr: 28.9865
-2026-07-17 07:36:07,111 INFO: [Gauss..][epoch:  4, iter:  85,000, lr:(3.000e-04,)] [eta: 1 day, 17:12:24, time (data): 0.709 (0.002)] l_pix_L: 1.7432e-02 l_pix_H: 1.4739e-02 l_pix: 1.6355e-02 
-2026-07-17 07:47:54,327 INFO: [Gauss..][epoch:  4, iter:  86,000, lr:(3.000e-04,)] [eta: 1 day, 17:01:36, time (data): 0.710 (0.002)] l_pix_L: 2.2819e-02 l_pix_H: 1.8981e-02 l_pix: 2.1284e-02 
-2026-07-17 07:59:31,837 INFO: [Gauss..][epoch:  4, iter:  87,000, lr:(3.000e-04,)] [eta: 1 day, 16:50:24, time (data): 0.674 (0.002)] l_pix_L: 2.4273e-02 l_pix_H: 2.0262e-02 l_pix: 2.2669e-02 
-2026-07-17 08:10:45,290 INFO: [Gauss..][epoch:  4, iter:  88,000, lr:(3.000e-04,)] [eta: 1 day, 16:38:14, time (data): 0.679 (0.002)] l_pix_L: 1.7737e-02 l_pix_H: 1.5047e-02 l_pix: 1.6661e-02 
-2026-07-17 08:10:45,291 INFO: Saving models and training states.
-2026-07-17 08:11:21,795 INFO: Validation ValSet,		 # psnr: 29.0665
-2026-07-17 08:22:35,070 INFO: [Gauss..][epoch:  4, iter:  89,000, lr:(3.000e-04,)] [eta: 1 day, 16:27:30, time (data): 0.671 (0.002)] l_pix_L: 2.2844e-02 l_pix_H: 2.0125e-02 l_pix: 2.1756e-02 
-2026-07-17 08:34:17,699 INFO: [Gauss..][epoch:  5, iter:  90,000, lr:(3.000e-04,)] [eta: 1 day, 16:16:29, time (data): 0.676 (0.002)] l_pix_L: 2.4354e-02 l_pix_H: 2.1811e-02 l_pix: 2.3337e-02 
-2026-07-17 08:45:31,254 INFO: [Gauss..][epoch:  5, iter:  91,000, lr:(3.000e-04,)] [eta: 1 day, 16:04:19, time (data): 0.675 (0.002)] l_pix_L: 1.8036e-02 l_pix_H: 1.4268e-02 l_pix: 1.6529e-02 
-2026-07-17 08:57:08,265 INFO: [Gauss..][epoch:  5, iter:  92,000, lr:(3.000e-04,)] [eta: 1 day, 15:53:05, time (data): 0.711 (0.002)] l_pix_L: 3.4091e-02 l_pix_H: 2.8908e-02 l_pix: 3.2018e-02 
-2026-07-17 08:57:08,266 INFO: Saving models and training states.
-2026-07-17 08:57:46,768 INFO: Validation ValSet,		 # psnr: 29.0301
-2026-07-17 08:57:46,770 INFO: 
- Updating Patch_Size to 160 and Batch_Size to 5 
+2026-07-18 11:26:16,405 INFO: [Gauss..][epoch:  8, iter: 205,000, lr:(1.302e-04,)] [eta: 18:09:55, time (data): 0.625 (0.002)] l_pix_L: 4.4593e-01 l_pix_H: 4.2409e-01 l_pix: 4.3719e-01 
+2026-07-18 11:37:11,071 INFO: [Gauss..][epoch:  8, iter: 206,000, lr:(1.280e-04,)] [eta: 17:32:03, time (data): 0.662 (0.002)] l_pix_L: 5.2960e-02 l_pix_H: 4.8283e-02 l_pix: 5.1089e-02 
+2026-07-18 11:48:05,537 INFO: [Gauss..][epoch:  8, iter: 207,000, lr:(1.258e-04,)] [eta: 17:12:02, time (data): 0.659 (0.002)] l_pix_L: 1.3596e-01 l_pix_H: 1.1946e-01 l_pix: 1.2936e-01 
+2026-07-18 11:58:49,938 INFO: [Gauss..][epoch:  8, iter: 208,000, lr:(1.236e-04,)] [eta: 16:52:44, time (data): 0.663 (0.002)] l_pix_L: 1.5744e-01 l_pix_H: 1.4337e-01 l_pix: 1.5182e-01 
+2026-07-18 11:58:49,939 INFO: Saving models and training states.
+2026-07-18 11:59:36,779 INFO: Validation ValSet,		 # psnr: 29.1067
+2026-07-18 12:10:14,618 INFO: [Gauss..][epoch:  8, iter: 209,000, lr:(1.213e-04,)] [eta: 16:49:03, time (data): 0.631 (0.002)] l_pix_L: 1.2116e-01 l_pix_H: 1.1233e-01 l_pix: 1.1763e-01 
+2026-07-18 12:21:34,823 INFO: [Gauss..][epoch:  8, iter: 210,000, lr:(1.191e-04,)] [eta: 16:41:41, time (data): 0.659 (0.002)] l_pix_L: 1.4613e-01 l_pix_H: 1.3888e-01 l_pix: 1.4323e-01 
+2026-07-18 12:32:13,760 INFO: [Gauss..][epoch:  8, iter: 211,000, lr:(1.169e-04,)] [eta: 16:24:26, time (data): 0.663 (0.002)] l_pix_L: 1.4590e-01 l_pix_H: 1.3301e-01 l_pix: 1.4074e-01 
+2026-07-18 12:42:48,798 INFO: [Gauss..][epoch:  8, iter: 212,000, lr:(1.147e-04,)] [eta: 16:08:08, time (data): 0.662 (0.002)] l_pix_L: 6.0450e-02 l_pix_H: 5.5459e-02 l_pix: 5.8454e-02 
+2026-07-18 12:42:48,799 INFO: Saving models and training states.
+2026-07-18 12:43:26,776 INFO: Validation ValSet,		 # psnr: 29.1944
+2026-07-18 12:54:07,938 INFO: [Gauss..][epoch:  8, iter: 213,000, lr:(1.125e-04,)] [eta: 16:00:12, time (data): 0.662 (0.002)] l_pix_L: 9.2949e-02 l_pix_H: 8.0216e-02 l_pix: 8.7856e-02 
+2026-07-18 13:04:54,643 INFO: [Gauss..][epoch:  8, iter: 214,000, lr:(1.104e-04,)] [eta: 15:46:56, time (data): 0.628 (0.002)] l_pix_L: 1.0677e-01 l_pix_H: 6.4725e-02 l_pix: 8.9950e-02 
+2026-07-18 13:15:35,588 INFO: [Gauss..][epoch:  8, iter: 215,000, lr:(1.082e-04,)] [eta: 15:33:23, time (data): 0.631 (0.002)] l_pix_L: 3.0867e-02 l_pix_H: 2.3750e-02 l_pix: 2.8020e-02 
+2026-07-18 13:26:01,472 INFO: [Gauss..][epoch:  8, iter: 216,000, lr:(1.060e-04,)] [eta: 15:18:33, time (data): 0.613 (0.002)] l_pix_L: 8.6503e-02 l_pix_H: 7.4411e-02 l_pix: 8.1666e-02 
+2026-07-18 13:26:01,473 INFO: Saving models and training states.
+2026-07-18 13:26:37,311 INFO: Validation ValSet,		 # psnr: 29.2424
+2026-07-18 13:37:13,236 INFO: [Gauss..][epoch:  8, iter: 217,000, lr:(1.039e-04,)] [eta: 15:09:17, time (data): 0.630 (0.002)] l_pix_L: 6.5985e-02 l_pix_H: 4.3799e-02 l_pix: 5.7110e-02 
+2026-07-18 13:47:49,886 INFO: [Gauss..][epoch:  8, iter: 218,000, lr:(1.017e-04,)] [eta: 14:56:19, time (data): 0.624 (0.002)] l_pix_L: 1.2330e-01 l_pix_H: 7.5306e-02 l_pix: 1.0410e-01 
+2026-07-18 13:58:42,726 INFO: [Gauss..][epoch:  8, iter: 219,000, lr:(9.961e-05,)] [eta: 14:45:06, time (data): 0.659 (0.002)] l_pix_L: 2.0126e-02 l_pix_H: 1.5141e-02 l_pix: 1.8132e-02 
+2026-07-18 14:10:31,634 INFO: [Gauss..][epoch:  8, iter: 220,000, lr:(9.749e-05,)] [eta: 14:38:37, time (data): 0.823 (0.004)] l_pix_L: 3.3652e-02 l_pix_H: 2.0292e-02 l_pix: 2.8308e-02 
+2026-07-18 14:10:31,657 INFO: Saving models and training states.
+2026-07-18 14:11:18,291 INFO: Validation ValSet,		 # psnr: 29.2413
+2026-07-18 14:24:09,099 INFO: [Gauss..][epoch:  8, iter: 221,000, lr:(9.538e-05,)] [eta: 14:39:55, time (data): 0.803 (0.005)] l_pix_L: 7.5871e-02 l_pix_H: 6.4886e-02 l_pix: 7.1477e-02 
+2026-07-18 14:36:06,895 INFO: [Gauss..][epoch:  8, iter: 222,000, lr:(9.329e-05,)] [eta: 14:32:21, time (data): 0.627 (0.002)] l_pix_L: 8.9678e-03 l_pix_H: 5.4875e-03 l_pix: 7.5757e-03 
+2026-07-18 14:46:32,048 INFO: [Gauss..][epoch:  8, iter: 223,000, lr:(9.121e-05,)] [eta: 14:18:04, time (data): 0.623 (0.002)] l_pix_L: 8.9819e-02 l_pix_H: 4.8077e-02 l_pix: 7.3123e-02 
+2026-07-18 14:57:02,350 INFO: [Gauss..][epoch:  8, iter: 224,000, lr:(8.915e-05,)] [eta: 14:04:29, time (data): 0.623 (0.002)] l_pix_L: 3.1306e-02 l_pix_H: 2.0325e-02 l_pix: 2.6914e-02 
+2026-07-18 14:57:02,351 INFO: Saving models and training states.
+2026-07-18 14:57:38,507 INFO: Validation ValSet,		 # psnr: 29.2668
+2026-07-18 15:08:30,372 INFO: [Gauss..][epoch:  8, iter: 225,000, lr:(8.709e-05,)] [eta: 13:54:39, time (data): 0.662 (0.002)] l_pix_L: 7.3518e-02 l_pix_H: 4.5189e-02 l_pix: 6.2186e-02 
+2026-07-18 15:19:09,877 INFO: [Gauss..][epoch:  8, iter: 226,000, lr:(8.506e-05,)] [eta: 13:41:56, time (data): 0.632 (0.002)] l_pix_L: 1.7087e-02 l_pix_H: 1.1104e-02 l_pix: 1.4694e-02 
+2026-07-18 15:29:50,722 INFO: [Gauss..][epoch:  8, iter: 227,000, lr:(8.303e-05,)] [eta: 13:29:28, time (data): 0.627 (0.002)] l_pix_L: 3.2696e-02 l_pix_H: 2.6952e-02 l_pix: 3.0399e-02 
+2026-07-18 15:40:36,755 INFO: [Gauss..][epoch:  8, iter: 228,000, lr:(8.103e-05,)] [eta: 13:17:25, time (data): 0.655 (0.002)] l_pix_L: 1.8822e-02 l_pix_H: 1.0713e-02 l_pix: 1.5578e-02 
+2026-07-18 15:40:36,756 INFO: Saving models and training states.
+2026-07-18 15:41:14,768 INFO: Validation ValSet,		 # psnr: 29.2691
+2026-07-18 15:52:13,099 INFO: [Gauss..][epoch:  8, iter: 229,000, lr:(7.903e-05,)] [eta: 13:07:51, time (data): 0.623 (0.002)] l_pix_L: 3.2612e-02 l_pix_H: 2.2139e-02 l_pix: 2.8423e-02 
+2026-07-18 16:03:00,211 INFO: [Gauss..][epoch:  8, iter: 230,000, lr:(7.706e-05,)] [eta: 12:55:55, time (data): 0.658 (0.002)] l_pix_L: 9.8513e-02 l_pix_H: 4.4293e-02 l_pix: 7.6825e-02 
+2026-07-18 16:13:59,022 INFO: [Gauss..][epoch:  8, iter: 231,000, lr:(7.510e-05,)] [eta: 12:44:34, time (data): 0.661 (0.002)] l_pix_L: 3.6868e-02 l_pix_H: 1.8454e-02 l_pix: 2.9502e-02 
+2026-07-18 16:24:50,629 INFO: [Gauss..][epoch:  8, iter: 232,000, lr:(7.316e-05,)] [eta: 12:32:57, time (data): 0.660 (0.002)] l_pix_L: 1.8709e-02 l_pix_H: 8.2225e-03 l_pix: 1.4514e-02 
+2026-07-18 16:24:50,630 INFO: Saving models and training states.
+2026-07-18 16:25:27,667 INFO: Validation ValSet,		 # psnr: 29.2662
+2026-07-18 16:36:12,615 INFO: [Gauss..][epoch:  8, iter: 233,000, lr:(7.124e-05,)] [eta: 12:22:33, time (data): 0.629 (0.002)] l_pix_L: 8.8590e-02 l_pix_H: 4.6988e-02 l_pix: 7.1949e-02 
+2026-07-18 16:46:38,180 INFO: [Gauss..][epoch:  8, iter: 234,000, lr:(6.933e-05,)] [eta: 12:10:01, time (data): 0.627 (0.002)] l_pix_L: 8.9398e-03 l_pix_H: 5.3388e-03 l_pix: 7.4994e-03 
+2026-07-18 16:57:00,493 INFO: [Gauss..][epoch:  8, iter: 235,000, lr:(6.744e-05,)] [eta: 11:57:31, time (data): 0.619 (0.001)] l_pix_L: 5.6729e-02 l_pix_H: 3.0802e-02 l_pix: 4.6358e-02 
+2026-07-18 17:07:31,893 INFO: [Gauss..][epoch:  8, iter: 236,000, lr:(6.558e-05,)] [eta: 11:45:27, time (data): 0.669 (0.002)] l_pix_L: 6.9400e-02 l_pix_H: 3.9997e-02 l_pix: 5.7639e-02 
+2026-07-18 17:07:31,894 INFO: Saving models and training states.
+2026-07-18 17:08:08,498 INFO: Validation ValSet,		 # psnr: 29.2897
+2026-07-18 17:18:48,727 INFO: [Gauss..][epoch:  8, iter: 237,000, lr:(6.373e-05,)] [eta: 11:34:55, time (data): 0.629 (0.002)] l_pix_L: 2.6679e-02 l_pix_H: 1.4564e-02 l_pix: 2.1833e-02 
+2026-07-18 17:29:41,999 INFO: [Gauss..][epoch:  8, iter: 238,000, lr:(6.190e-05,)] [eta: 11:23:37, time (data): 0.660 (0.002)] l_pix_L: 5.5324e-02 l_pix_H: 2.4653e-02 l_pix: 4.3055e-02 
+2026-07-18 17:40:32,317 INFO: [Gauss..][epoch:  8, iter: 239,000, lr:(6.009e-05,)] [eta: 11:12:16, time (data): 0.625 (0.002)] l_pix_L: 3.7026e-02 l_pix_H: 1.4286e-02 l_pix: 2.7930e-02 
+2026-07-18 17:51:21,347 INFO: [Gauss..][epoch:  8, iter: 240,000, lr:(5.830e-05,)] [eta: 11:00:54, time (data): 0.624 (0.002)] l_pix_L: 1.0085e-01 l_pix_H: 5.6301e-02 l_pix: 8.3033e-02 
+2026-07-18 17:51:21,348 INFO: Saving models and training states.
+2026-07-18 17:51:59,075 INFO: Validation ValSet,		 # psnr: 29.3042
+2026-07-18 17:51:59,078 INFO: 
+ Updating Patch_Size to 320 and Batch_Size to 1 
 
