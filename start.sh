@@ -33,4 +33,4 @@ bash setup_env.sh
 export PYTHONPATH=$(pwd):$PYTHONPATH
 
 # 8. Start training
-bash ./train.sh Denoising/Options/GaussianColorDenoising_Restormer.yml
+bash ./train.sh Denoising/Options/GaussianColorDenoising_RestormerSigma15.yml
