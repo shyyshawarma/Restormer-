@@ -305,6 +305,12 @@ class Restormer(nn.Module):
             self.output1 = nn.Conv2d(dim, 8, kernel_size=3, padding=1, bias=bias)
             self.outputx = nn.Conv2d(8, out_channels, kernel_size=3, stride=1, padding=1, bias=bias)
 
+        # Print the number of parameters of the model
+        print(f"Number of parameters: {sum(p.numel() for p in self.parameters())}")
+
+    def get_num_params(self):
+        return sum(p.numel() for p in self.parameters())
+
     def forward(self, inp_img):
         
         inp_enc_level1 = self.patch_embed(inp_img) #[B, 48, H, W] -> restormer gives, [B, 16, H, W] for phaseformer
