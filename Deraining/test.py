@@ -53,7 +53,7 @@ model_restoration.eval()
 
 
 factor = 8
-datasets = ['Rain100L', 'Rain100H', 'Test100', 'Test1200', 'Test2800']
+datasets = ['Test2800']
 
 for dataset in datasets:
     result_dir  = os.path.join(args.result_dir, dataset)
